@@ -1,98 +1,111 @@
-function Box({ name, lines = [], italic = false }) {
-  return (
-    <div className={italic ? "d-box italic" : "d-box"}>
-      <strong>{name}</strong>
-      {lines.length ? (
-        <ul>
-          {lines.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
-      ) : null}
-    </div>
-  );
-}
+import {
+  ActivityDiagram,
+  Association,
+  ClassNode,
+  Generalization,
+  ObjectDiagram,
+  PackageDiagram,
+  SequenceDiagram,
+  StateDiagram,
+  UseCaseDiagram,
+  splitMembers,
+} from "./UmlFigures.jsx";
 
 function Message({ block }) {
   return (
-    <div className="d-row">
-      <Box name={`${block.from.name} : ${block.from.type}`} />
-      <div className="d-arrow">
-        <span>{block.message}</span>
-        <svg viewBox="0 0 120 24" aria-hidden="true">
-          <line x1="0" y1="12" x2="104" y2="12" />
-          <polyline points="96,4 116,12 96,20" />
-        </svg>
-      </div>
-      <Box name={`${block.to.name} : ${block.to.type}`} lines={[block.to.state]} />
-    </div>
+    <SequenceDiagram
+      lifelines={[`${block.from.name} : ${block.from.type}`, `${block.to.name} : ${block.to.type}`]}
+      messages={[
+        { from: 0, to: 1, label: block.message },
+        { from: 1, to: 0, label: block.to.state || "respuesta", kind: "return" },
+      ]}
+    />
   );
 }
 
 function Hierarchy({ block }) {
-  return (
-    <div className="hier">
-      <Box name={block.parent.name} lines={block.parent.members} italic={Boolean(block.parent.abstract)} />
-      <div className="hier-children">
-        {block.children.map((child) => (
-          <Box key={child.name} name={child.name} lines={child.members} />
-        ))}
-      </div>
-    </div>
-  );
+  return <Generalization parent={block.parent} children={block.children} />;
 }
 
 function Links({ block }) {
   return (
     <div className="d-col">
-      <div className="d-row">
-        {block.boxes.map((box) => (
-          <Box key={box.name} name={box.name} lines={[box.detail]} />
+      <div className="assoc-chain">
+        {block.boxes.map((box, index) => (
+          <div key={box.name} className="chain-item">
+            {index > 0 ? (
+              <span className="chain-mult">{block.boxes[index - 1].detail} —— {box.detail}</span>
+            ) : null}
+            <ClassNode name={box.name} attributes={[`multiplicidad ${box.detail}`]} />
+          </div>
         ))}
       </div>
-      <p className="d-note">{block.note}</p>
+      {block.note ? <p className="d-note">{block.note}</p> : null}
     </div>
   );
 }
 
 function UmlClass({ block }) {
-  return <Box name={block.className} lines={[...block.attributes, "—", ...block.methods]} />;
+  return (
+    <ClassNode
+      name={block.className}
+      attributes={block.attributes}
+      methods={block.methods}
+      abstract={Boolean(block.abstract)}
+    />
+  );
 }
 
 function InterfaceDiagram({ block }) {
   return (
     <div className="d-col">
-      <div className="d-row">
-        <Box name={block.client} />
-        <div className="d-arrow">
-          <span>usa</span>
-          <svg viewBox="0 0 120 24" aria-hidden="true">
-            <line x1="0" y1="12" x2="104" y2="12" />
-            <polyline points="96,4 116,12 96,20" />
-          </svg>
-        </div>
-        <Box name={`«interfaz» ${block.contract}`} italic />
-      </div>
-      <div className="hier-children">
-        {block.implementations.map((name) => (
-          <Box key={name} name={name} lines={[`implementa ${block.contract}`]} />
-        ))}
-      </div>
+      <Association
+        kind="dependencia"
+        label="usa"
+        leftNode={<ClassNode name={block.client} />}
+        rightNode={<ClassNode name={block.contract} stereotype="«interfaz»" abstract />}
+      />
+      <Generalization
+        parent={{ name: block.contract, stereotype: "«interfaz»", abstract: true, members: [] }}
+        children={block.implementations.map((name) => ({ name, members: ["realiza el contrato"] }))}
+      />
     </div>
   );
 }
 
 function Flow({ block }) {
+  return <ActivityDiagram steps={block.steps} />;
+}
+
+function Sequence({ block }) {
+  return <SequenceDiagram lifelines={block.lifelines} messages={block.messages} />;
+}
+
+function Objects({ block }) {
+  return <ObjectDiagram objects={block.objects} link={block.link} />;
+}
+
+function Linked({ block }) {
+  const left = splitMembers(block.left.members || []);
+  const right = splitMembers(block.right.members || []);
   return (
-    <ol className="d-flow">
-      {block.steps.map((step, index) => (
-        <li key={step}>
-          <span>{index + 1}</span>
-          {step}
-        </li>
-      ))}
-    </ol>
+    <Association
+      kind={block.edge}
+      label={block.label}
+      leftMult={block.leftMult}
+      rightMult={block.rightMult}
+      leftNode={<ClassNode name={block.left.name} attributes={left.attributes} methods={left.methods} abstract={block.left.abstract} />}
+      rightNode={<ClassNode name={block.right.name} attributes={right.attributes} methods={right.methods} />}
+    />
   );
+}
+
+function States({ block }) {
+  return <StateDiagram states={block.states} transitions={block.transitions} />;
+}
+
+function Packages({ block }) {
+  return <PackageDiagram packages={block.packages} />;
 }
 
 const KINDS = {
@@ -102,6 +115,11 @@ const KINDS = {
   uml: UmlClass,
   interface: InterfaceDiagram,
   flow: Flow,
+  sequence: Sequence,
+  objects: Objects,
+  association: Linked,
+  state: States,
+  packages: Packages,
 };
 
 export default function Diagram({ block }) {

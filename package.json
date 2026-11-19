@@ -7,7 +7,7 @@
     "build": "node scripts/build-plantillas.mjs && node scripts/build-word.mjs && vite build",
     "plantillas": "node scripts/build-plantillas.mjs && node scripts/build-word.mjs",
     "preview": "vite preview",
-    "test": "node --test test/weeks.test.js"
+    "test": "node --test test/weeks.test.js test/labs.test.js"
   },
   "dependencies": {
     "react": "^19.1.0",

@@ -1,5 +1,7 @@
 import { complementFor } from "./complementos.js";
 import { extrasFor } from "./extras.js";
+import { labFor } from "./laboratorios.js";
+import { teoriaFor } from "./teoria.js";
 
 export const COURSE = {
   title: "Desarrollo de Software Orientado a Objetos",
@@ -1071,11 +1073,16 @@ export const WEEKS = RAW.map((week) => {
           id: "word",
           label: "Completé la plantilla Word alineada a la norma de esta semana",
         },
+        {
+          id: "lab",
+          label: "Completé el laboratorio: el diagrama y el fragmento de código",
+        },
       ],
     };
   });
   const closeAt = blocks.findIndex((block) => block.type === "checklist");
-  blocks.splice(closeAt, 0, ...extrasFor(week.week), ...complementFor(week.week));
+  blocks.splice(closeAt, 0, ...extrasFor(week.week), ...complementFor(week.week), ...labFor(week.week));
+  blocks.unshift(...teoriaFor(week.week));
   return { ...week, minutes: Math.min(week.minutes + 25, 90), blocks };
 });
 

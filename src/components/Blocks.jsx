@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { CodeLab, DiagramLab } from "./Labs.jsx";
 import { readJson, writeJson } from "../storage.js";
 import Diagram from "./Diagrams.jsx";
+import { ClassNode, UseCaseDiagram } from "./UmlFigures.jsx";
 
 function Paragraphs({ block }) {
   return (
@@ -204,51 +206,41 @@ function ClassDiagram({ block }) {
   return (
     <section className="block">
       <h3>{block.title}</h3>
-      <div className="uml-row">
+      {block.caption ? <p className="hint">{block.caption}</p> : null}
+      <div className="class-grid">
         {block.classes.map((item) => (
-          <div key={item.name} className="uml">
-            <strong>{item.name}</strong>
-            <ul>
-              {item.attributes.map((attribute) => (
-                <li key={attribute}>{attribute}</li>
-              ))}
-            </ul>
-            <ul>
-              {item.methods.map((method) => (
-                <li key={method}>{method}</li>
-              ))}
-            </ul>
-          </div>
+          <ClassNode key={item.name} name={item.name} attributes={item.attributes} methods={item.methods} />
         ))}
       </div>
-      <ul className="relation-list">
+      <ul className="edge-list">
         {block.relations.map((relation) => (
-          <li key={relation}>{relation}</li>
+          <li key={relation}>
+            <EdgeGlyph text={relation} />
+            <span>{relation}</span>
+          </li>
         ))}
       </ul>
-      {block.caption ? <p className="hint">{block.caption}</p> : null}
     </section>
   );
+}
+
+function EdgeGlyph({ text }) {
+  const kind = text.includes("composición")
+    ? "composition"
+    : text.includes("generalización")
+      ? "generalization"
+      : text.includes("agregación")
+        ? "aggregation"
+        : "association";
+  return <span className={`edge-glyph ${kind}`} aria-hidden="true" />;
 }
 
 function UseCase({ block }) {
   return (
     <section className="block">
       <h3>{block.title}</h3>
-      <div className="usecase">
-        <ul className="actors">
-          {block.actors.map((actor) => (
-            <li key={actor}>{actor}</li>
-          ))}
-        </ul>
-        <div className="system">
-          <span>{block.system}</span>
-          <ul>
-            {block.cases.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
+      <div className="diagram" role="img" aria-label={block.title}>
+        <UseCaseDiagram actors={block.actors} system={block.system} cases={block.cases} />
       </div>
       <ul className="relation-list">
         {block.notes.map((note) => (
@@ -628,6 +620,8 @@ const RENDERERS = {
   codePick: CodePick,
   downloads: Downloads,
   match: Match,
+  diagramLab: DiagramLab,
+  codeLab: CodeLab,
 };
 
 export default function BlockList({ week, blocks }) {

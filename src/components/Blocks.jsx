@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CodeLab, DiagramLab } from "./Labs.jsx";
 import { readJson, writeJson } from "../storage.js";
 import Diagram from "./Diagrams.jsx";
+import { gradeDecision } from "../content/decisionGrade.js";
 import { gradeDossier } from "../labs/grade.js";
-import { ClassNode, UseCaseDiagram } from "./UmlFigures.jsx";
+import { Association, ClassNode, Generalization, SequenceDiagram, UseCaseDiagram } from "./UmlFigures.jsx";
 
 function Paragraphs({ block }) {
   return (
@@ -12,6 +13,271 @@ function Paragraphs({ block }) {
         <p key={paragraph}>{paragraph}</p>
       ))}
     </div>
+  );
+}
+
+function BeatFigure({ figure }) {
+  if (figure.kind === "class") {
+    return (
+      <ClassNode
+        name={figure.name}
+        attributes={figure.attributes}
+        methods={figure.methods}
+        abstract={figure.abstract}
+        stereotype={figure.stereotype}
+      />
+    );
+  }
+  if (figure.kind === "sequence") {
+    return <SequenceDiagram lifelines={figure.lifelines} messages={figure.messages} />;
+  }
+  if (figure.kind === "assoc") {
+    return (
+      <Association
+        left={figure.left}
+        right={figure.right}
+        kind={figure.kindName}
+        label={figure.label}
+        leftMult={figure.leftMult}
+        rightMult={figure.rightMult}
+      />
+    );
+  }
+  if (figure.kind === "gen") return <Generalization parent={figure.parent} children={figure.children} />;
+  if (figure.kind === "usecase") {
+    return (
+      <UseCaseDiagram
+        actors={[figure.actor]}
+        system={figure.system}
+        cases={figure.cases}
+        links={figure.cases}
+        relations={figure.relations || []}
+      />
+    );
+  }
+  if (figure.kind === "pills") {
+    return (
+      <div className="state-row">
+        {figure.states.map((state, index) => (
+          <div key={state} className={index === figure.at ? "state-node is-here" : "state-node"}>{state}</div>
+        ))}
+      </div>
+    );
+  }
+  return <pre className="beat-code">{figure.text}</pre>;
+}
+
+function Recorrido({ block }) {
+  const railRef = useRef(null);
+  const [cursor, setCursor] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [token, setToken] = useState({ top: 10, left: 12 });
+  const last = block.beats.length - 1;
+  const beat = block.beats[cursor];
+
+  useEffect(() => {
+    if (!playing || cursor >= last) {
+      if (playing && cursor >= last) setPlaying(false);
+      return undefined;
+    }
+    const timer = setTimeout(() => setCursor((value) => Math.min(value + 1, last)), 1400);
+    return () => clearTimeout(timer);
+  }, [playing, cursor, last]);
+
+  useLayoutEffect(() => {
+    const rail = railRef.current;
+    const node = rail?.querySelector(`[data-stop="beat-${cursor}"]`);
+    if (!rail || !node) return;
+    const railBox = rail.getBoundingClientRect();
+    const box = node.getBoundingClientRect();
+    setToken({
+      top: box.top - railBox.top + box.height / 2 - 7,
+      left: box.left - railBox.left + 14,
+    });
+  }, [cursor, block.beats]);
+
+  return (
+    <section className="block recorrido">
+      <h3>{block.title}</h3>
+      <p className="hint">{block.intro}</p>
+      <div className="recorrido-rail" ref={railRef}>
+        {block.beats.map((item, index) => (
+          <button
+            key={item.title}
+            type="button"
+            data-stop={`beat-${index}`}
+            className={index === cursor ? "on" : ""}
+            onClick={() => {
+              setPlaying(false);
+              setCursor(index);
+            }}
+          >
+            <span className="kicker">Parada {index + 1}</span>
+            {item.title}
+          </button>
+        ))}
+        <span className="flow-token" style={{ top: token.top, left: token.left }} aria-hidden="true" />
+      </div>
+      <div className="recorrido-stage">
+        <div className="recorrido-figure">
+          <BeatFigure figure={beat.figure} />
+        </div>
+        <div>
+          <p>{beat.body}</p>
+          <p className="recorrido-tip">{beat.tip}</p>
+        </div>
+      </div>
+      <div className="flow-controls">
+        <button type="button" onClick={() => setPlaying((value) => !value)}>{playing ? "Pausa" : "Reproducir"}</button>
+        <button type="button" onClick={() => { setPlaying(false); setCursor((value) => Math.min(value + 1, last)); }}>Paso</button>
+        <button type="button" onClick={() => { setPlaying(false); setCursor(0); }}>Reiniciar</button>
+      </div>
+    </section>
+  );
+}
+
+function Decision({ week, block }) {
+  const storageKey = `decision:${week}:${block.id}`;
+  const [picks, setPicks] = useState({});
+  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    const saved = readJson(storageKey, null);
+    if (saved?.picks) setPicks(saved.picks);
+    if (saved?.result) setResult(saved.result);
+  }, [storageKey]);
+
+  function select(stepId, optionId) {
+    const next = { ...picks, [stepId]: optionId };
+    setPicks(next);
+    setResult(null);
+    writeJson(storageKey, { picks: next, result: null });
+  }
+
+  function close() {
+    const graded = gradeDecision(block, picks);
+    setResult(graded);
+    writeJson(storageKey, { picks, result: graded });
+  }
+
+  const taken = block.steps.filter((step) => picks[step.id]).length;
+
+  return (
+    <section className="block decision">
+      <h3>{block.title}</h3>
+      <p>{block.brief}</p>
+      <ul className="decision-constraints">
+        {block.constraints.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+      <div className="decision-layout">
+        <div className="decision-steps">
+          {block.steps.map((step, index) => {
+            const chosen = step.options.find((option) => option.id === picks[step.id]);
+            const tone = result && chosen ? (chosen.fault ? "is-fault" : "is-ok") : "";
+            return (
+              <fieldset key={step.id} className={tone}>
+                <legend>
+                  <span className="kicker">Decisión {index + 1}</span>
+                  {step.ask}
+                </legend>
+                <p className="hint">{step.tension}</p>
+                <div className="decision-options">
+                  {step.options.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      aria-pressed={picks[step.id] === option.id}
+                      className={picks[step.id] === option.id ? "on" : ""}
+                      onClick={() => select(step.id, option.id)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+                {chosen ? <p className="decision-effect">{chosen.effect}</p> : null}
+                {result && chosen?.fault ? <p className="feedback">{chosen.fault}</p> : null}
+              </fieldset>
+            );
+          })}
+        </div>
+        <aside className="decision-acta">
+          <p className="kicker">Lo que el diseño afirma</p>
+          <ol>
+            {block.steps.map((step) => {
+              const chosen = step.options.find((option) => option.id === picks[step.id]);
+              return <li key={step.id}>{chosen ? chosen.effect : "Esta decisión sigue abierta."}</li>;
+            })}
+          </ol>
+          <p className="hint">{taken} de {block.steps.length} decisiones tomadas</p>
+          <button type="button" onClick={close}>Cerrar la decisión</button>
+          {result ? (
+            <div className={result.ok ? "feedback ok" : "feedback"}>
+              <p>{result.verdict}</p>
+              {result.notes.length ? (
+                <ul>
+                  {result.notes.map((note) => (
+                    <li key={note}>{note}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+function Oficio({ block }) {
+  const [index, setIndex] = useState(0);
+  const [detail, setDetail] = useState(false);
+  const item = block.items[index];
+  return (
+    <section className="block oficio">
+      <p className="hint">{block.intro}</p>
+      <div className="oficio-layout">
+        <div className="oficio-rail" role="tablist" aria-label="Oficio de la semana">
+          {block.items.map((entry, entryIndex) => (
+            <button
+              key={entry.title}
+              type="button"
+              role="tab"
+              aria-selected={entryIndex === index}
+              className={entryIndex === index ? "on" : ""}
+              onClick={() => {
+                setIndex(entryIndex);
+                setDetail(false);
+              }}
+            >
+              <span className="kicker">{entry.kind}</span>
+              {entry.title}
+            </button>
+          ))}
+        </div>
+        <article className="oficio-panel" role="tabpanel">
+          <p>{item.lead}</p>
+          <div className="oficio-split">
+            <div className="oficio-bad">
+              <span className="kicker">Así se rompe</span>
+              <pre>{item.bad}</pre>
+              <p>{item.badWhy}</p>
+            </div>
+            <div className="oficio-good">
+              <span className="kicker">Así se sostiene</span>
+              <pre>{item.good}</pre>
+              <p>{item.goodWhy}</p>
+            </div>
+          </div>
+          <p className="oficio-rule">{item.rule}</p>
+          <button type="button" className="oficio-more" aria-expanded={detail} onClick={() => setDetail((value) => !value)}>
+            {detail ? "Ocultar el detalle técnico" : "Abrir el detalle técnico"}
+          </button>
+          {detail ? <p className="oficio-detail">{item.detail}</p> : null}
+        </article>
+      </div>
+    </section>
   );
 }
 
@@ -682,6 +948,9 @@ const RENDERERS = {
   diagramLab: DiagramLab,
   codeLab: CodeLab,
   dossier: Dossier,
+  oficio: Oficio,
+  recorrido: Recorrido,
+  decision: Decision,
 };
 
 export default function BlockList({ week, blocks }) {

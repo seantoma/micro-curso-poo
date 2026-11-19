@@ -35,6 +35,20 @@ function Chip({ label, on, onClick }) {
   );
 }
 
+function Reading({ lines }) {
+  if (!lines.length) return null;
+  return (
+    <aside className="diagram-read">
+      <p className="kicker">Cómo se lee</p>
+      <ul>
+        {lines.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+    </aside>
+  );
+}
+
 function ClassPreview({ answer }) {
   return (
     <ClassNode
@@ -90,23 +104,37 @@ export function DiagramLab({ week, block }) {
 }
 
 function MessageBoard({ block, answer, update }) {
+  const names = block.lifelines || {};
+  const lifelines = [answer.from, answer.to].map((name) => (name ? names[name] || name : "?"));
+  const messages = [{ from: 0, to: 1, label: answer.message || "mensaje" }];
+  if (answer.reply) messages.push({ from: 1, to: 0, label: answer.reply, kind: "return" });
+  const lines = [];
+  if (answer.from && answer.to) {
+    lines.push(`${lifelines[0]} y ${lifelines[1]} son objetos, no clases. La línea punteada es la vida de ese mismo objeto.`);
+  }
+  if (answer.message) {
+    lines.push(`La flecha llena es el mensaje ${answer.message}. La barra sobre quien recibe es la activación: ahí corre el método.`);
+  }
+  if (answer.reply) {
+    lines.push(`La flecha punteada devuelve «${answer.reply}». Es la respuesta del mismo objeto, no un ejemplar nuevo.`);
+  }
   return (
     <div className="lab-grid">
-      {["from", "message", "to"].map((field) => (
+      {["from", "message", "to", "reply"].map((field) => (
         <div key={field}>
-          <p className="kicker">{field === "from" ? "Envía" : field === "message" ? "Mensaje" : "Recibe"}</p>
+          <p className="kicker">
+            {field === "from" ? "Emisor" : field === "message" ? "Mensaje" : field === "to" ? "Receptor" : "Respuesta"}
+          </p>
           <div className="chip-bank">
-            {block.options[field].map((option) => (
+            {(block.options[field] || []).map((option) => (
               <Chip key={option} label={option} on={answer[field] === option} onClick={() => update({ ...answer, [field]: option })} />
             ))}
           </div>
         </div>
       ))}
       <div className="lab-preview">
-        <SequenceDiagram
-          lifelines={[answer.from || "?", answer.to || "?"]}
-          messages={[{ from: 0, to: 1, label: answer.message || "mensaje" }]}
-        />
+        <SequenceDiagram lifelines={lifelines} messages={messages} />
+        <Reading lines={lines} />
       </div>
     </div>
   );
@@ -148,6 +176,7 @@ function ClassBoard({ block, answer, update, slot, setSlot }) {
         ))}
       </div>
       <ClassPreview answer={answer} />
+      <Reading lines={readClass(answer)} />
     </div>
   );
 }
@@ -157,6 +186,7 @@ function RelationBoard({ block, answer, update }) {
     ["left", "Extremo izquierdo"],
     ["kind", "Vínculo"],
     ["right", "Extremo derecho"],
+    ["role", "Nombre del vínculo"],
     ["leftMult", "Multiplicidad izquierda"],
     ["rightMult", "Multiplicidad derecha"],
   ];
@@ -177,9 +207,13 @@ function RelationBoard({ block, answer, update }) {
         left={answer.left || "?"}
         right={answer.right || "?"}
         kind={answer.kind || "asociación"}
+        label={answer.role}
         leftMult={answer.leftMult}
         rightMult={answer.rightMult}
+        leftNode={profileNode(block, answer.left)}
+        rightNode={profileNode(block, answer.right)}
       />
+      <Reading lines={readRelation(answer)} />
     </div>
   );
 }
@@ -219,9 +253,17 @@ function HierarchyBoard({ block, answer, update }) {
         </div>
       </div>
       <Generalization
-        parent={{ name: answer.parent || "Padre", abstract: answer.abstract, members: [] }}
-        children={(answer.children || []).map((name) => ({ name, members: [] }))}
+        parent={{
+          name: answer.parent || "Padre",
+          abstract: answer.abstract,
+          members: (block.catalog && block.catalog[answer.parent]) || [],
+        }}
+        children={(answer.children || []).map((name) => ({
+          name,
+          members: (block.catalog && block.catalog[name]) || [],
+        }))}
       />
+      <Reading lines={readHierarchy(answer)} />
     </div>
   );
 }
@@ -264,7 +306,23 @@ function UsecaseBoard({ block, answer, update }) {
         actors={[answer.actor || "Actor"]}
         system={answer.system || "Sistema"}
         cases={answer.cases || []}
+        links={answer.cases || []}
+        relations={chosenRelation(block, answer) ? [chosenRelation(block, answer)] : []}
       />
+      <div>
+        <p className="kicker">Relación entre casos</p>
+        <div className="chip-bank">
+          {(block.relations || []).map((item) => (
+            <Chip
+              key={item.id}
+              label={`${item.kind}: ${item.from} → ${item.to}`}
+              on={answer.relation === item.id}
+              onClick={() => update({ ...answer, relation: item.id })}
+            />
+          ))}
+        </div>
+      </div>
+      <Reading lines={readUseCase(answer, chosenRelation(block, answer))} />
     </div>
   );
 }
@@ -281,7 +339,11 @@ function FlowBoard({ answer, update }) {
 
   return (
     <div className="lab-grid">
-      <ActivityDiagram steps={answer.steps} />
+      <ActivityDiagram steps={answer.steps} guard="¿el estado es válido?" />
+      <Reading lines={[
+        "Reproducir mueve el testigo por el orden que armaste. En el rombo el proceso se detiene y eliges la rama.",
+        "Disponible marca prestado y termina. Inválido sigue hacia abajo: no cambia el ejemplar, avisa y deja la decisión arriba.",
+      ]} />
       <ol className="flow-lab">
         {answer.steps.map((step, index) => (
           <li key={step}>
@@ -385,10 +447,86 @@ export function CodeLab({ week, block }) {
 }
 
 function initialDiagram(block) {
-  if (block.kind === "message") return { from: "", message: "", to: "" };
+  if (block.kind === "message") return { from: "", message: "", to: "", reply: "" };
   if (block.kind === "classbox") return { name: "", attributes: [], methods: [] };
-  if (block.kind === "relation") return { left: "", right: "", kind: "", leftMult: "", rightMult: "" };
+  if (block.kind === "relation") return { left: "", right: "", kind: "", role: "", leftMult: "", rightMult: "" };
   if (block.kind === "hierarchy") return { parent: "", abstract: false, children: [] };
-  if (block.kind === "usecase") return { actor: "", system: "", cases: [] };
+  if (block.kind === "usecase") return { actor: "", system: "", cases: [], relation: "" };
   return { steps: [...block.start] };
+}
+
+function profileNode(block, name) {
+  const profile = block.profiles?.[name];
+  if (!name || !profile) return undefined;
+  return <ClassNode name={name} attributes={profile.attributes} methods={profile.methods} />;
+}
+
+function readClass(answer) {
+  const lines = [];
+  if (answer.name) lines.push(`${answer.name} es la clase: el molde. El ejemplar concreto no se dibuja en esta caja.`);
+  for (const attribute of answer.attributes || []) {
+    const visibility = attribute.startsWith("-")
+      ? "El signo menos lo oculta: solo la clase lo usa."
+      : attribute.startsWith("+")
+        ? "El signo más lo publica."
+        : "Está en el compartimento de atributos: es estado que el objeto recuerda.";
+    lines.push(`${attribute}. ${visibility}`);
+  }
+  for (const method of answer.methods || []) {
+    const visibility = method.startsWith("+")
+      ? "El signo más la ofrece como mensaje."
+      : "Está en el compartimento de operaciones: otra clase la pide, no reescribe el dato.";
+    lines.push(`${method}. ${visibility}`);
+  }
+  return lines;
+}
+
+const RELATION_READ = {
+  asociación: "Línea simple: se conocen y cada uno puede seguir si el otro desaparece.",
+  composición: "Rombo lleno en el todo: la parte no vive fuera de él.",
+  agregación: "Rombo vacío: el todo reúne partes que pueden salir.",
+  herencia: "Triángulo vacío hacia el general. Se lee «es un», no «tiene un».",
+  generalización: "Triángulo vacío hacia el general. Se lee «es un», no «tiene un».",
+  dependencia: "Flecha punteada: lo usa un momento y no lo guarda como atributo.",
+};
+
+function readRelation(answer) {
+  if (!answer.left && !answer.kind) return [];
+  const kind = answer.kind || "vínculo";
+  return [
+    `${answer.leftMult || "?"} ${answer.left || "?"} ${kind} ${answer.role || ""} ${answer.rightMult || "?"} ${answer.right || "?"}.`.replace(/\s+/g, " "),
+    RELATION_READ[kind] || "El tipo de línea cambia el significado del vínculo.",
+    answer.role ? `«${answer.role}» es el nombre del vínculo: dice para qué se conocen, no cómo se implementan.` : "",
+  ].filter(Boolean);
+}
+
+function readHierarchy(answer) {
+  const lines = [];
+  if (answer.parent) {
+    lines.push(answer.abstract
+      ? `${answer.parent} va en cursiva y con «abstracta»: no se construye con new. Los hijos sí.`
+      : `${answer.parent} es el general. Esta semana todavía se puede pensar como clase concreta.`);
+  }
+  if (answer.children?.length) {
+    lines.push(`${answer.children.join(" y ")} son un ${answer.parent || "padre"}. La operación común baja; cada hijo puede responder distinto.`);
+  }
+  return lines;
+}
+
+function chosenRelation(block, answer) {
+  return (block.relations || []).find((item) => item.id === answer.relation && item.id !== "ninguna");
+}
+
+function readUseCase(answer, relation) {
+  const lines = [];
+  if (answer.actor || answer.system) {
+    lines.push(`${answer.actor || "El actor"} queda fuera del borde. ${answer.system || "El sistema"} es el límite, no una clase interna.`);
+  }
+  if (answer.cases?.length) {
+    lines.push(`Cada óvalo es una meta: ${answer.cases.join(", ")}. La línea simple los une al actor. Un botón o una tabla no entran ahí.`);
+  }
+  if (relation) {
+    lines.push(`${relation.kind} de ${relation.from} hacia ${relation.to}. Include siempre ocurre. Extend solo si se cumple una condición, como el retraso.`);
+  }
+  return lines;
 }

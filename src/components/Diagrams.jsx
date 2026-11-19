@@ -79,7 +79,7 @@ function InterfaceDiagram({ block }) {
 }
 
 function Flow({ block }) {
-  return <ActivityDiagram steps={block.steps} />;
+  return <ActivityDiagram steps={block.steps} guard={block.guard} />;
 }
 
 function Sequence({ block }) {

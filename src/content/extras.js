@@ -1,3 +1,5 @@
+import { recorridoFor } from "./recorridos.js";
+
 function sheet(week) {
   const file = `/plantillas/semana-0${week}.html`;
   return {
@@ -14,7 +16,9 @@ function sheet(week) {
 }
 
 export function extrasFor(week) {
-  return EXTRAS[week] || [];
+  const blocks = EXTRAS[week] || [];
+  if (!blocks.length) return [];
+  return [blocks[0], ...recorridoFor(week), ...blocks.slice(1)];
 }
 
 const EXTRAS = {
@@ -582,7 +586,8 @@ int dias = libro.diasDePrestamo();`,
       type: "diagram",
       kind: "flow",
       title: "Proceso cuando prestar falla",
-      caption: "Validar es el primer paso y se queda en el código. Depurar es recorrer este proceso cuando el fallo igual ocurrió.",
+      caption: "Validar es el primer paso y se queda en el código. El rombo pregunta si el estado es válido. Depurar es recorrer este proceso cuando el fallo igual ocurrió.",
+      guard: "¿estado válido?",
       steps: ["Validar", "No cambiar estado", "Avisar", "Decidir arriba", "Cerrar"],
     },
     {

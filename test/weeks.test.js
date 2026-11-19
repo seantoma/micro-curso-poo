@@ -52,6 +52,17 @@ test("el curso tiene las ocho frases oficiales de la malla", () => {
     assert.ok(week.blocks.some((block) => block.type === "downloads" && block.items.some((item) => item.href.endsWith(".docx"))));
     const close = week.blocks.find((block) => block.type === "checklist");
     assert.ok(close.items.some((item) => item.id === "plantilla"));
+    const oficio = week.blocks.find((block) => block.type === "oficio");
+    assert.equal(oficio.items.length, 3);
+    assert.ok(oficio.items.every((item) => item.detail.length > 80 && item.bad && item.good && item.rule));
+    assert.ok(week.blocks.some((block) => block.type === "section" && block.id === "oficio"));
+    const recorrido = week.blocks.find((block) => block.type === "recorrido");
+    assert.equal(recorrido.beats.length, 4);
+    assert.ok(recorrido.beats.every((beat) => beat.title && beat.body && beat.tip && beat.figure));
+    const decision = week.blocks.find((block) => block.type === "decision");
+    assert.equal(decision.steps.length, 3);
+    assert.ok(week.blocks.some((block) => block.type === "section" && block.id === "decision"));
+    assert.ok(close.items.some((item) => item.id === "decision"));
     assert.ok(week.blocks.filter((block) => block.type !== "section").length >= 4);
   });
 });

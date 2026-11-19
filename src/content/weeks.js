@@ -1,7 +1,9 @@
 import { calidadFor } from "./calidad.js";
+import { decisionFor } from "./decisiones.js";
 import { complementFor } from "./complementos.js";
 import { extrasFor } from "./extras.js";
 import { labFor } from "./laboratorios.js";
+import { oficioFor } from "./oficio.js";
 import { teoriaFor } from "./teoria.js";
 
 export const COURSE = {
@@ -1082,6 +1084,10 @@ export const WEEKS = RAW.map((week) => {
           id: "lab",
           label: "Completé el laboratorio: el diagrama y el fragmento de código",
         },
+        {
+          id: "decision",
+          label: "Cerré la decisión técnica y leí si el conjunto se sostiene",
+        },
         ...(week.week === 8
           ? [{ id: "dossier", label: "Redacté el dossier del préstamo y revisé los cuatro criterios" }]
           : []),
@@ -1096,6 +1102,8 @@ export const WEEKS = RAW.map((week) => {
     ...extrasFor(week.week),
     ...complementFor(week.week),
     ...quality.beforeLab,
+    ...oficioFor(week.week),
+    ...decisionFor(week.week),
     ...labFor(week.week),
     ...quality.closing,
   );

@@ -297,6 +297,17 @@ th { color: var(--accent); font-weight: 650; }
 .quiz button.picked.ok { border-color: var(--ok); background: var(--ok-soft); }
 .feedback { border-radius: 14px; padding: 0.75rem 0.85rem; background: color-mix(in srgb, var(--bg) 65%, transparent); border: 1px solid var(--border); }
 .feedback.ok { background: var(--ok-soft); }
+.fixture-list, .rubric { margin: 0.8rem 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+.rubric { list-style: decimal; padding-left: 1.2rem; }
+.fixture-list li, .dossier-label { display: flex; flex-direction: column; gap: 0.2rem; }
+.fixture-list li { border: 1px solid var(--border); border-radius: 12px; padding: 0.55rem 0.75rem; }
+.fixture-list li.ok { border-color: var(--ok); }
+.dossier-label textarea, .trace-code { width: 100%; box-sizing: border-box; }
+.dossier-label textarea { min-height: 8rem; margin-top: 0.35rem; }
+.trace-code { overflow-x: auto; }
+.uc-rels { list-style: none; margin: 0.8rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.uc-rels li { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.35rem; font-size: 0.82rem; }
+.uc-arrow { width: 148px; height: 32px; }
 .checks label { display: flex; gap: 0.65rem; align-items: flex-start; cursor: pointer; }
 .checks input { accent-color: var(--accent); margin-top: 0.25rem; }
 pre {

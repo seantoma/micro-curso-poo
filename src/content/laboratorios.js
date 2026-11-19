@@ -24,6 +24,10 @@ const labs = {
       id: "l1-c",
       title: "Escribe el cambio de estado",
       prompt: "Completa prestar para que el mismo ejemplar pase a prestado. No construyas otro objeto.",
+      fixtures: [
+        { label: "E-204 está disponible", start: "disponible", state: "prestado", error: false, sameObject: true },
+        { label: "Sigue siendo el mismo ejemplar", start: "prestado", state: "prestado", error: false, sameObject: true },
+      ],
       languages: {
         java: {
           starter: `class Ejemplar {\n    String codigo = "E-204";\n    String estado = "disponible";\n\n    void prestar() {\n    }\n}\n`,
@@ -61,6 +65,10 @@ const labs = {
       id: "l2-c",
       title: "Esconde el estado",
       prompt: "El estado solo cambia dentro de la clase. En Java márcalo privado y el método público. En Python usa el atributo interno y no una variable global.",
+      fixtures: [
+        { label: "El objeto pasa a prestado", start: "disponible", state: "prestado", error: false, encapsulated: true },
+        { label: "El dato no queda global", start: "prestado", state: "prestado", error: false, encapsulated: true },
+      ],
       languages: {
         java: {
           starter: `class Ejemplar {\n    String estado = "disponible";\n\n    void prestar() {\n        estado = "prestado";\n    }\n}\n`,
@@ -277,11 +285,15 @@ const labs = {
     code: {
       id: "l8-c",
       title: "Valida antes de prestar",
-      prompt: "Si el ejemplar no está disponible, lanza un error. No lo marques como disponible ni tragues la excepción.",
+      prompt: "Si el ejemplar está disponible, márcalo prestado. Si no lo está, lanza un error y no cambies el estado.",
+      fixtures: [
+        { label: "E-204 está disponible", start: "disponible", state: "prestado", error: false },
+        { label: "E-204 ya está prestado", start: "prestado", state: "prestado", error: true },
+      ],
       languages: {
         java: {
           starter: `class Ejemplar {\n    String estado = "prestado";\n\n    void prestar() {\n        estado = "disponible";\n    }\n}\n`,
-          solution: `class Ejemplar {\n    String estado = "prestado";\n\n    void prestar() {\n        if (!estado.equals("disponible")) {\n            throw new IllegalStateException("El ejemplar no está disponible");\n        }\n    }\n}\n`,
+          solution: `class Ejemplar {\n    String estado = "prestado";\n\n    void prestar() {\n        if (!estado.equals("disponible")) {\n            throw new IllegalStateException("El ejemplar no está disponible");\n        }\n        estado = "prestado";\n    }\n}\n`,
           need: [
             { regex: "\\bif\\b", hint: "Comprueba la condición con if." },
             { regex: "throw\\b", hint: "Lanza el error cuando el estado no sirve." },
@@ -293,7 +305,7 @@ const labs = {
         },
         python: {
           starter: `class Ejemplar:\n    def __init__(self):\n        self.estado = "prestado"\n\n    def prestar(self):\n        self.estado = "disponible"\n`,
-          solution: `class Ejemplar:\n    def __init__(self):\n        self.estado = "prestado"\n\n    def prestar(self):\n        if self.estado != "disponible":\n            raise ValueError("El ejemplar no está disponible")\n`,
+          solution: `class Ejemplar:\n    def __init__(self):\n        self.estado = "prestado"\n\n    def prestar(self):\n        if self.estado != "disponible":\n            raise ValueError("El ejemplar no está disponible")\n        self.estado = "prestado"\n`,
           need: [
             { regex: "\\bif\\b", hint: "Comprueba la condición con if." },
             { regex: "\\braise\\b", hint: "Lanza el error cuando el estado no sirve." },
@@ -317,7 +329,7 @@ export function labFor(week) {
     {
       type: "paragraphs",
       paragraphs: [
-        "El laboratorio de esta semana tiene dos retos. El primero arma un diagrama del tema. El segundo pide un fragmento corto en Java o en Python. Comprobar revisa la estructura: no ejecuta el programa ni sustituye una prueba con datos reales.",
+        "El laboratorio de esta semana tiene dos retos. El primero arma un diagrama del tema. El segundo pide un fragmento corto en Java o en Python. Comprobar revisa la estructura. Si el reto trae pruebas, además simula prestar() con el estado inicial del ejemplar: no compila el lenguaje completo.",
       ],
     },
     {

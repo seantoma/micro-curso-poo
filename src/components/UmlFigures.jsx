@@ -177,7 +177,10 @@ export function ActorFigure({ name }) {
   );
 }
 
-export function UseCaseDiagram({ actors = [], system = "Sistema", cases = [] }) {
+export function UseCaseDiagram({ actors = [], system = "Sistema", cases = [], relations = [] }) {
+  const prefix = useId().replace(/:/g, "");
+  const extra = relations.map((item) => item.to).filter((name) => name && !cases.includes(name));
+  const shown = [...cases.filter(Boolean), ...extra];
   return (
     <div className="usecase-draw">
       <div className="actor-col">
@@ -188,10 +191,25 @@ export function UseCaseDiagram({ actors = [], system = "Sistema", cases = [] }) 
       <div className="system-frame">
         <span className="system-name">{system || "Sistema"}</span>
         <div className="oval-grid">
-          {cases.filter(Boolean).map((item) => (
+          {shown.map((item) => (
             <div key={item} className="oval">{item}</div>
           ))}
         </div>
+        {relations.length ? (
+          <ul className="uc-rels">
+            {relations.map((item, index) => (
+              <li key={`${item.from}-${item.to}`}>
+                <span>{item.from}</span>
+                <svg className="uc-arrow" viewBox="0 0 148 32" aria-label={item.kind}>
+                  <Markers prefix={`${prefix}uc${index}`} />
+                  <line x1="4" y1="22" x2="132" y2="22" className="uml-dashed" markerEnd={`url(#${markerId(`${prefix}uc${index}`, "open")})`} />
+                  <text x="74" y="14" textAnchor="middle">{item.kind}</text>
+                </svg>
+                <span>{item.to}</span>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
     </div>
   );

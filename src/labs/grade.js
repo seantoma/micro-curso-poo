@@ -95,6 +95,16 @@ function matches(rule, text) {
   return text.includes(rule.text);
 }
 
+export function gradeDossier(text) {
+  const notes = [];
+  const body = (text || "").trim().toLowerCase();
+  if (body.length < 80) notes.push("El párrafo tiene que explicar la decisión, no solo nombrar las clases.");
+  if (!/composici|compone|asociaci|asocia/.test(body)) notes.push("Justifica la relación entre biblioteca, préstamo y ejemplar.");
+  if (!/interfaz|catalogo|contrato/.test(body)) notes.push("Explica por qué Catalogo es un contrato.");
+  if (!/valid|disponible|error|excep/.test(body)) notes.push("Di qué pasa cuando prestar no puede cumplirse.");
+  return notesOf(notes.length === 0, notes);
+}
+
 export function gradeCode(lab, source) {
   const text = (source || "").trim();
   if (!text) return notesOf(false, ["Escribe el fragmento antes de comprobar."]);

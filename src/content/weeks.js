@@ -1,3 +1,4 @@
+import { calidadFor } from "./calidad.js";
 import { complementFor } from "./complementos.js";
 import { extrasFor } from "./extras.js";
 import { labFor } from "./laboratorios.js";
@@ -692,6 +693,10 @@ ejemplar.prestar(usuario)
           "Registrar préstamo incluye Validar usuario: siempre ocurre, no es opcional.",
           "Aplicar sanción extiende Devolver ejemplar: solo si el ejemplar vuelve fuera de plazo.",
         ],
+        relations: [
+          { from: "Registrar préstamo", to: "Validar usuario", kind: "«include»" },
+          { from: "Devolver ejemplar", to: "Aplicar sanción", kind: "«extend»" },
+        ],
       },
       {
         type: "compare",
@@ -1077,11 +1082,24 @@ export const WEEKS = RAW.map((week) => {
           id: "lab",
           label: "Completé el laboratorio: el diagrama y el fragmento de código",
         },
+        ...(week.week === 8
+          ? [{ id: "dossier", label: "Redacté el dossier del préstamo y revisé los cuatro criterios" }]
+          : []),
       ],
     };
   });
+  const quality = calidadFor(week.week);
   const closeAt = blocks.findIndex((block) => block.type === "checklist");
-  blocks.splice(closeAt, 0, ...extrasFor(week.week), ...complementFor(week.week), ...labFor(week.week));
+  blocks.splice(
+    closeAt,
+    0,
+    ...extrasFor(week.week),
+    ...complementFor(week.week),
+    ...quality.beforeLab,
+    ...labFor(week.week),
+    ...quality.closing,
+  );
+  blocks.unshift(...quality.opening);
   blocks.unshift(...teoriaFor(week.week));
   return { ...week, minutes: Math.min(week.minutes + 25, 90), blocks };
 });

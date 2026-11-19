@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { CodeLab, DiagramLab } from "./Labs.jsx";
 import { readJson, writeJson } from "../storage.js";
 import Diagram from "./Diagrams.jsx";
+import { gradeDossier } from "../labs/grade.js";
 import { ClassNode, UseCaseDiagram } from "./UmlFigures.jsx";
 
 function Paragraphs({ block }) {
@@ -240,7 +241,7 @@ function UseCase({ block }) {
     <section className="block">
       <h3>{block.title}</h3>
       <div className="diagram" role="img" aria-label={block.title}>
-        <UseCaseDiagram actors={block.actors} system={block.system} cases={block.cases} />
+        <UseCaseDiagram actors={block.actors} system={block.system} cases={block.cases} relations={block.relations} />
       </div>
       <ul className="relation-list">
         {block.notes.map((note) => (
@@ -369,6 +370,11 @@ function Quiz({ week, block }) {
     <section className="block">
       <h3>{block.title}</h3>
       <p>{block.prompt}</p>
+      {block.code ? (
+        <pre className="trace-code">
+          <code>{block.code}</code>
+        </pre>
+      ) : null}
       <ul className="quiz">
         {block.options.map((option) => (
           <li key={option.id}>
@@ -600,6 +606,59 @@ function Downloads({ block }) {
   );
 }
 
+function Dossier({ week, block }) {
+  const storageKey = `dossier:${week}:${block.id}`;
+  const [text, setText] = useState("");
+  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    const saved = readJson(storageKey, null);
+    if (saved?.text) setText(saved.text);
+    if (saved?.result) setResult(saved.result);
+  }, [storageKey]);
+
+  function edit(value) {
+    setText(value);
+    setResult(null);
+    writeJson(storageKey, { text: value, result: null });
+  }
+
+  function check() {
+    const graded = gradeDossier(text);
+    setResult(graded);
+    writeJson(storageKey, { text, result: graded });
+  }
+
+  return (
+    <section className="block">
+      <h3>{block.title}</h3>
+      <p>{block.prompt}</p>
+      <ol className="rubric">
+        {block.criteria.map((criterion) => (
+          <li key={criterion}>{criterion}</li>
+        ))}
+      </ol>
+      <label className="dossier-label" htmlFor={storageKey}>
+        Párrafo de cierre
+        <textarea id={storageKey} value={text} onChange={(event) => edit(event.target.value)} />
+      </label>
+      <button type="button" onClick={check}>Revisar el párrafo</button>
+      {result ? (
+        <div className={result.ok ? "feedback ok" : "feedback"}>
+          <p>{result.ok ? "El párrafo cubre los cuatro criterios." : "Todavía falta justificar alguna decisión."}</p>
+          {result.notes.length ? (
+            <ul>
+              {result.notes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 const RENDERERS = {
   paragraphs: Paragraphs,
   callout: Callout,
@@ -622,6 +681,7 @@ const RENDERERS = {
   match: Match,
   diagramLab: DiagramLab,
   codeLab: CodeLab,
+  dossier: Dossier,
 };
 
 export default function BlockList({ week, blocks }) {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { gradeCode, gradeDiagram } from "../labs/grade.js";
+import { runLoanFixtures } from "../labs/fixtures.js";
 import { readJson, writeJson } from "../storage.js";
 import {
   ActivityDiagram,
@@ -327,8 +328,14 @@ export function CodeLab({ week, block }) {
 
   function check() {
     const graded = gradeCode(block.languages[language], drafts[language]);
-    setResult(graded);
-    writeJson(storageKey, { drafts, language, result: graded });
+    const fixtures = block.fixtures ? runLoanFixtures(drafts[language], block.fixtures) : null;
+    const next = {
+      ok: graded.ok && (fixtures ? fixtures.ok : true),
+      notes: graded.notes,
+      rows: fixtures?.rows || [],
+    };
+    setResult(next);
+    writeJson(storageKey, { drafts, language, result: next });
   }
 
   return (
@@ -359,6 +366,19 @@ export function CodeLab({ week, block }) {
       <button type="button" onClick={check}>
         Comprobar código
       </button>
+      {block.fixtures ? (
+        <p className="hint">Las pruebas simulan prestar() con dos estados iniciales del ejemplar. No compilan Java ni Python.</p>
+      ) : null}
+      {result?.rows?.length ? (
+        <ul className="fixture-list">
+          {result.rows.map((row) => (
+            <li key={row.label} className={row.ok ? "ok" : ""}>
+              <strong>{row.label}</strong>
+              <span>{row.ok ? "Cumple la prueba." : row.problems[0]}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       <Feedback result={result} okText="El fragmento cumple las condiciones del laboratorio." />
     </section>
   );

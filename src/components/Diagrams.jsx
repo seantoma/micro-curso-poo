@@ -63,12 +63,17 @@ function InterfaceDiagram({ block }) {
         kind="dependencia"
         label="usa"
         leftNode={<ClassNode name={block.client} />}
-        rightNode={<ClassNode name={block.contract} stereotype="«interfaz»" abstract />}
+        rightNode={<ClassNode name={block.contract} stereotype="«interfaz»" />}
       />
-      <Generalization
-        parent={{ name: block.contract, stereotype: "«interfaz»", abstract: true, members: [] }}
-        children={block.implementations.map((name) => ({ name, members: ["realiza el contrato"] }))}
-      />
+      {block.implementations.map((name) => (
+        <Association
+          key={name}
+          kind="realización"
+          label="«realización»"
+          leftNode={<ClassNode name={name} />}
+          rightNode={<ClassNode name={block.contract} stereotype="«interfaz»" />}
+        />
+      ))}
     </div>
   );
 }

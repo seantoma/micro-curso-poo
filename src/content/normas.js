@@ -1,0 +1,157 @@
+export const FORMATOS = [
+  {
+    week: 1,
+    id: "POO-VOC-001",
+    file: "POO-VOC-001-glosario.docx",
+    title: "Glosario de conceptos de la POO",
+    norm: "ISO/IEC/IEEE 24765",
+    normName: "Vocabulario de ingeniería de software y sistemas",
+    purpose:
+      "Fijar los términos del paradigma con la estructura de un glosario de proyecto: término, definición propia, ejemplo y nota de uso. Sirve para que el equipo no confunda clase con objeto.",
+    rows: [
+      ["Término", "Definición de estudio", "Ejemplo en el préstamo"],
+      ["Objeto", "Entidad concreta, con identidad, que recuerda un estado.", "Ejemplar E-204"],
+      ["Clase", "Descripción de los objetos que comparten atributos y operaciones.", "Clase Ejemplar"],
+      ["Mensaje", "Petición de un objeto a otro para que ejecute una operación.", "ana.prestar() sobre E-204"],
+      ["Estado", "Valores que el objeto recuerda en un momento.", "disponible, luego prestado"],
+      ["Identidad", "Lo que permite señalar el mismo objeto aunque cambie el estado.", "El código E-204"],
+      ["", "", ""],
+      ["", "", ""],
+    ],
+  },
+  {
+    week: 2,
+    id: "POO-DIS-002",
+    file: "POO-DIS-002-ficha-de-clase.docx",
+    title: "Ficha de clase y técnicas",
+    norm: "IEEE 1016 e ISO/IEC 25010",
+    normName: "Descripción de diseño de software y modelo de calidad del producto",
+    purpose:
+      "Describir una clase como ítem de diseño: responsabilidad, miembros y visibilidad. La columna de calidad pide relacionar la técnica con una característica de ISO/IEC 25010, por ejemplo mantenibilidad o integridad.",
+    rows: [
+      ["Clase", "Responsabilidad", "Miembros y visibilidad", "Técnica", "Característica 25010"],
+      ["Ejemplar", "Custodiar la disponibilidad", "− disponible; + prestar()", "Encapsulamiento", "Integridad"],
+      ["Material", "Compartir el préstamo", "+ prestar(); + diasDePrestamo()", "Herencia", "Reutilización / mantenibilidad"],
+      ["Libro", "Responder 15 días", "+ diasDePrestamo()", "Polimorfismo", "Adecuación funcional"],
+      ["", "", "", "", ""],
+      ["", "", "", "", ""],
+    ],
+  },
+  {
+    week: 3,
+    id: "POO-MOD-003",
+    file: "POO-MOD-003-registro-de-modelo.docx",
+    title: "Registro del modelo en la herramienta",
+    norm: "IEEE 1016",
+    normName: "Descripción de diseño: vista, elemento y decisión",
+    purpose:
+      "Dejar constancia de lo que se hizo en la herramienta de modelado. Una decisión de diseño no cuenta si no se puede señalar en el diagrama y en el archivo exportado.",
+    rows: [
+      ["Vista", "Herramienta", "Elemento", "Decisión", "Evidencia"],
+      ["Clases", "La que uses esta semana", "Ejemplar", "disponible es privado", "Imagen o archivo del modelo"],
+      ["Clases", "La que uses esta semana", "Material", "Libro y Revista generalizan", "Flecha hacia Material"],
+      ["Clases", "La que uses esta semana", "diasDePrestamo()", "Mismo mensaje, distinta respuesta", "Operación en padre e hijas"],
+      ["", "", "", "", ""],
+    ],
+  },
+  {
+    week: 4,
+    id: "POO-CLS-004",
+    file: "POO-CLS-004-modelamiento-de-clases.docx",
+    title: "Modelamiento de clases",
+    norm: "IEEE 1016",
+    normName: "Relaciones de la vista de diseño",
+    purpose:
+      "Registrar cada relación con su tipo, su multiplicidad y la razón por la que la parte sigue existiendo o no. Es el formato con el que se defiende un diagrama de clases.",
+    rows: [
+      ["Relación", "Tipo", "Multiplicidad", "¿La parte sobrevive?", "Justificación"],
+      ["Usuario — Prestamo", "Asociación", "1 —— *", "Sí", "La persona sigue en el sistema si se anula el préstamo"],
+      ["Prestamo — Ejemplar", "Asociación", "* —— 1", "Sí", "El ejemplar no está hecho de préstamos"],
+      ["Biblioteca — Ejemplar", "Composición", "1 ◆—— *", "No, en este modelo", "El ejemplar catalogado pertenece a esa biblioteca"],
+      ["Material — Libro", "Generalización", "es un", "No aplica", "Un libro es un material"],
+      ["", "", "", "", ""],
+    ],
+  },
+  {
+    week: 5,
+    id: "POO-UML-005",
+    file: "POO-UML-005-lectura-uml.docx",
+    title: "Lectura de un diagrama UML",
+    norm: "ISO/IEC 19505 y OMG UML",
+    normName: "Lenguaje unificado de modelado",
+    purpose:
+      "Leer símbolos UML y, al lado, decir qué rasgo del paradigma están escribiendo. El formato separa la notación del significado, que es lo que pide emplear el lenguaje sin confundirlo con el paradigma.",
+    rows: [
+      ["Símbolo", "Qué significa", "Dónde está en el préstamo", "Rasgo del paradigma"],
+      ["− delante del atributo", "Visibilidad privada", "− disponible", "Ocultamiento"],
+      ["+ delante de la operación", "Visibilidad pública", "+ prestar()", "Mensaje de colaboración"],
+      ["Línea con multiplicidad", "Asociación", "Usuario 1 —— * Prestamo", "Los objetos se conocen"],
+      ["Flecha de generalización", "Es un", "Libro hacia Material", "Herencia"],
+      ["", "", "", ""],
+    ],
+  },
+  {
+    week: 6,
+    id: "POO-UC-006",
+    file: "POO-UC-006-caso-de-uso.docx",
+    title: "Especificación de caso de uso",
+    norm: "ISO/IEC/IEEE 29148",
+    normName: "Ingeniería de requisitos: caso de uso como ítem de información",
+    purpose:
+      "Especificar un caso de uso con actor, precondición, flujo principal, alterno y postcondición. Abajo queda el contrato de la interfaz que el diseño usa por dentro, para no mezclar lo que ve la persona con lo que ve otra clase.",
+    rows: [
+      ["Campo", "Registrar préstamo", "Tu caso"],
+      ["Actor principal", "Usuario", ""],
+      ["Precondición", "El usuario está identificado y el ejemplar existe", ""],
+      ["Flujo principal", "1. Consulta disponibilidad. 2. Confirma. 3. El sistema registra el préstamo.", ""],
+      ["Include", "Validar usuario, siempre", ""],
+      ["Extend", "Aplicar sanción solo si hay retraso, al devolver", ""],
+      ["Postcondición", "El ejemplar queda prestado a esa persona", ""],
+      ["Interfaz usada por dentro", "Catalogo.apartar(codigo, usuario)", ""],
+      ["Quién depende del contrato", "ServicioPrestamo, no de la lista concreta", ""],
+    ],
+  },
+  {
+    week: 7,
+    id: "POO-CASE-007",
+    file: "POO-CASE-007-registro-case.docx",
+    title: "Registro de herramienta CASE y clase abstracta",
+    norm: "ISO/IEC/IEEE 15289",
+    normName: "Contenido de los ítems de información del ciclo de vida",
+    purpose:
+      "Documentar la consulta a StarUML y la decisión de diseño sobre la clase abstracta. Un ítem de información dice qué se consultó, qué se produjo y qué queda prohibido instanciar.",
+    rows: [
+      ["Campo", "Ejemplo StarUML / Material", "Tu registro"],
+      ["Herramienta", "StarUML", ""],
+      ["Recurso web", "https://docs.staruml.io/", ""],
+      ["Paso reproducido", "Crear diagrama de clases y marcar abstracta", ""],
+      ["Clase abstracta", "Material", ""],
+      ["Método abstracto", "diasDePrestamo()", ""],
+      ["Método con cuerpo", "prestar()", ""],
+      ["Instanciación", "new Material() no es válido; new Libro() sí", ""],
+      ["Diferencia con la interfaz", "Material guarda estado. Catalogo solo declara operaciones.", ""],
+    ],
+  },
+  {
+    week: 8,
+    id: "POO-VAL-008",
+    file: "POO-VAL-008-validacion-y-error.docx",
+    title: "Caso de validación y tratamiento de error",
+    norm: "ISO/IEC/IEEE 29119-3",
+    normName: "Documentación de pruebas: caso con precondición, entrada y resultado",
+    purpose:
+      "Escribir cada validación como un caso: precondición, entrada, resultado esperado y estado del objeto después del fallo. El tratamiento del error queda en el mismo registro, no en una nota suelta.",
+    rows: [
+      ["ID", "Precondición", "Entrada", "Resultado esperado", "Estado después"],
+      ["VAL-01", "Ejemplar disponible", "usuario nulo", "ErrorValidacion: falta el usuario", "Sigue disponible"],
+      ["VAL-02", "Ejemplar ya prestado", "otro usuario", "ErrorValidacion: ejemplar ocupado", "Sigue prestado al primero"],
+      ["VAL-03", "Ejemplar disponible", "fecha límite anterior a hoy", "ErrorValidacion: fecha inválida", "Sigue disponible"],
+      ["VAL-04", "", "", "", ""],
+      ["VAL-05", "", "", "", ""],
+    ],
+  },
+];
+
+export function formatoDe(week) {
+  return FORMATOS.find((formato) => formato.week === week);
+}

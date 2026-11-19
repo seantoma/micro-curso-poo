@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Semana 4 · Aplicaciones orientadas a objetos y modelamiento de clases</title>
+  <style>
+    body { font-family: "Segoe UI", sans-serif; color: #0f172a; margin: 0; background: #f8fafc; }
+    main { max-width: 820px; margin: 0 auto; padding: 2rem 1.2rem 3rem; }
+    h1 { font-size: 1.7rem; margin-bottom: 0.2rem; }
+    h2 { font-size: 1.15rem; margin-top: 1.8rem; }
+    p, li { line-height: 1.45; }
+    .kicker { color: #1d4ed8; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    ol { list-style: none; padding: 0; }
+    ol li { display: flex; gap: 0.7rem; margin: 0.45rem 0; }
+    ol span { width: 1.6rem; height: 1.6rem; border-radius: 999px; background: #dbeafe; color: #1d4ed8; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex: none; }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { border: 1px solid #cbd5e1; text-align: left; vertical-align: top; padding: 0.55rem 0.7rem; }
+    th { width: 34%; background: #f1f5f9; }
+    td.blank { height: 2.6rem; }
+    a { color: #1d4ed8; }
+    @media print { body { background: white; } main { padding: 0; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="kicker">Semana 4 · hoja de ruta y formato</p>
+    <h1>Aplicaciones orientadas a objetos y modelamiento de clases</h1>
+    <p>Conoce el uso de las aplicaciones orientadas a objetos. Realiza el modelamiento de Clases.</p>
+    <h2>Hoja de ruta</h2>
+    <ol><li><span>1</span>Escribe qué trabajo resuelve la aplicación.</li><li><span>2</span>Lista las clases y la responsabilidad de cada una.</li><li><span>3</span>Para cada pareja, elige asociación, agregación, composición o generalización.</li><li><span>4</span>Anota la multiplicidad y léela en voz alta.</li><li><span>5</span>Comprueba que ninguna clase haga el trabajo de las otras tres.</li></ol>
+    <h2>Ejemplo resuelto · préstamo de un ejemplar</h2>
+    <table><tr><th>Trabajo</th><td>Registrar un préstamo sin prestar dos veces el mismo ejemplar</td></tr><tr><th>Usuario 1 —— * Prestamo</th><td>Asociación. La persona sigue existiendo si el préstamo se anula.</td></tr><tr><th>Prestamo * —— 1 Ejemplar</th><td>Asociación. El ejemplar no está hecho de préstamos.</td></tr><tr><th>Biblioteca 1 ◆—— * Ejemplar</th><td>Composición. El ejemplar catalogado pertenece a esa biblioteca.</td></tr><tr><th>Material &lt;|—— Libro</th><td>Generalización. Un libro es un material.</td></tr></table>
+    <h2>Formato en blanco</h2>
+    <p>Completa la misma ruta con otro caso. Imprime la hoja o edita una copia.</p>
+    <table><tr><th>Trabajo de la aplicación</th><td class="blank"></td></tr><tr><th>Clases y su responsabilidad</th><td class="blank"></td></tr><tr><th>Relación 1 y su tipo</th><td class="blank"></td></tr><tr><th>Relación 2 y su multiplicidad</th><td class="blank"></td></tr><tr><th>Relación 3</th><td class="blank"></td></tr><tr><th>Qué no debe hacer cada clase</th><td class="blank"></td></tr></table>
+    <p><a href="./index.html">Volver a las plantillas</a></p>
+  </main>
+</body>
+</html>

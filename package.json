@@ -1,0 +1,22 @@
+{
+  "name": "micro-curso-poo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "node scripts/build-plantillas.mjs && node scripts/build-word.mjs && vite build",
+    "plantillas": "node scripts/build-plantillas.mjs && node scripts/build-word.mjs",
+    "preview": "vite preview",
+    "test": "node --test test/weeks.test.js"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.5.2",
+    "docx": "^9.15.4",
+    "vite": "^6.3.5"
+  }
+}

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Semana 3 · Herramienta de modelado y técnicas aplicadas</title>
+  <style>
+    body { font-family: "Segoe UI", sans-serif; color: #0f172a; margin: 0; background: #f8fafc; }
+    main { max-width: 820px; margin: 0 auto; padding: 2rem 1.2rem 3rem; }
+    h1 { font-size: 1.7rem; margin-bottom: 0.2rem; }
+    h2 { font-size: 1.15rem; margin-top: 1.8rem; }
+    p, li { line-height: 1.45; }
+    .kicker { color: #1d4ed8; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+    ol { list-style: none; padding: 0; }
+    ol li { display: flex; gap: 0.7rem; margin: 0.45rem 0; }
+    ol span { width: 1.6rem; height: 1.6rem; border-radius: 999px; background: #dbeafe; color: #1d4ed8; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex: none; }
+    table { width: 100%; border-collapse: collapse; background: white; }
+    th, td { border: 1px solid #cbd5e1; text-align: left; vertical-align: top; padding: 0.55rem 0.7rem; }
+    th { width: 34%; background: #f1f5f9; }
+    td.blank { height: 2.6rem; }
+    a { color: #1d4ed8; }
+    @media print { body { background: white; } main { padding: 0; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="kicker">Semana 3 · hoja de ruta y formato</p>
+    <h1>Herramienta de modelado y técnicas aplicadas</h1>
+    <p>Utiliza herramienta de modelado. Aplica las técnicas de programación orientada a objetos.</p>
+    <h2>Hoja de ruta</h2>
+    <ol><li><span>1</span>Abre un diagrama de clases vacío.</li><li><span>2</span>Crea Ejemplar con atributos privados y métodos públicos.</li><li><span>3</span>Extrae Material y traza la generalización desde Libro y Revista.</li><li><span>4</span>Declara diasDePrestamo() en la padre y en las hijas.</li><li><span>5</span>Exporta el diagrama y revisa que ningún dato de regla haya quedado público.</li></ol>
+    <h2>Ejemplo resuelto · préstamo de un ejemplar</h2>
+    <table><tr><th>Clase</th><td>Material</td></tr><tr><th>Atributos</th><td>- codigo, - disponible</td></tr><tr><th>Métodos</th><td>+ prestar(), + devolver()</td></tr><tr><th>Hijas</th><td>Libro, Revista</td></tr><tr><th>Mensaje polimórfico</th><td>diasDePrestamo()</td></tr><tr><th>Técnica aplicada</th><td>El estado no se asigna desde fuera: se usa prestar()</td></tr></table>
+    <h2>Formato en blanco</h2>
+    <p>Completa la misma ruta con otro caso. Imprime la hoja o edita una copia.</p>
+    <table><tr><th>Herramienta usada</th><td class="blank"></td></tr><tr><th>Clase creada</th><td class="blank"></td></tr><tr><th>Atributos y su visibilidad</th><td class="blank"></td></tr><tr><th>Métodos públicos</th><td class="blank"></td></tr><tr><th>Generalización</th><td class="blank"></td></tr><tr><th>Qué técnica cambió el dibujo</th><td class="blank"></td></tr></table>
+    <p><a href="./index.html">Volver a las plantillas</a></p>
+  </main>
+</body>
+</html>
